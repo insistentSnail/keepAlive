@@ -1,12 +1,29 @@
 <template>
   <div id="app">
-    <keep-alive>
+    <keep-alive :include="catch_components">
+      <router-view></router-view>
+    </keep-alive>
+
+    <!-- <keep-alive>
       <router-view v-if="$route.meta.keepAlive"></router-view>
     </keep-alive>
-    <router-view v-if="!$route.meta.keepAlive"></router-view>
+    <router-view v-if="!$route.meta.keepAlive"></router-view> -->
   </div>
 </template>
-
+<script>
+import { mapState } from "vuex";
+export default {
+  name: "App",
+  computed: {
+    ...mapState(["catch_components"]),
+  },
+  watch: {
+    catch_components (val) {
+      console.log(val, "缓存的值");
+    },
+  },
+};
+</script>
 <style lang="scss">
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;

@@ -20,7 +20,7 @@
 <script>
 export default {
   name: "Lists",
-  data() {
+  data () {
     return {
       lists: [
         {
@@ -43,30 +43,51 @@ export default {
       activeIndex: null,
     };
   },
-  created() {
+  created () {
     console.log("created", this.activeIndex);
   },
-  activated() {
+  activated () {
     console.log("activated", this.activeIndex);
   },
   // 方案一
   // 从该页面进入其他页面时才调用
-  beforeRouteLeave(to, from, next) {
-    // from 永远是 lists页面
-    if (to.path == "/Detail") {
-      // 去往详情页的话，lists页面需要缓存
-      from.meta.keepAlive = true;
+  //   beforeRouteLeave(to, from, next) {
+  //     // from 永远是 lists页面
+  //     if (to.path == "/Detail") {
+  //       // 去往详情页的话，lists页面需要缓存
+  //       from.meta.keepAlive = true;
+  //     } else {
+  //       from.meta.keepAlive = false;
+  //       setTimeout(() => {
+  //         window.location.reload(); // 为啥需要强制刷新  不刷新的话再次进入时，再点击详情返回，缓存的是上一次的数据
+  //       }, 300);
+  //     }
+  //     next();
+  //   },
+
+  // 方案二
+  beforeRouteLeave (to, from, next) {
+    //要在离开该组件的时候控制需要缓存的组件，否则将出现第一次不缓存的情况
+    if (to.path === "/Detail") {
+      // 去往详情页的时候需要缓存组件，其他情况下不需要缓存
+      this.$store.commit("GET_CATCHE_COMPONENTS", ["Lists"]); //注意，'home'将匹配首先检查组件自身的 name 选项（非router.js里的），如果 name 选项不可用，则匹配它的局部注册名称 (父组件 components 选项的键值)。匿名组件不能被匹配。
     } else {
-      from.meta.keepAlive = false;
-      setTimeout(() => {
-        window.location.reload(); // 为啥需要强制刷新  不刷新的话再次进入时，再点击详情返回，缓存的是上一次的数据
-      }, 300);
+      this.$store.commit("GET_CATCHE_COMPONENTS", []);
     }
     next();
   },
 
+  beforeRouteEnter (to, from, next) {
+    next((vm) => {
+      console.log(from.path);
+      if (from.path === "/About" || from.path === "/") {
+        vm.$store.commit("GET_CATCHE_COMPONENTS", ["Lists"]);
+      }
+    });
+  },
+
   methods: {
-    routerTo(item, index) {
+    routerTo (item, index) {
       this.activeIndex = index;
       this.$router.push({ name: "Detail", query: { id: item.id } });
     },
